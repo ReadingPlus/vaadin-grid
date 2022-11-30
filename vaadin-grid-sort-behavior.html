@@ -61,8 +61,7 @@
        * When the columnInfoList is updated, new headers are created / updated having a null path and direction,
        * which does not mean user changed the sort spec.
        **/
-      _onSorChanged_UpdateSingleSort: function (sorter) {
-          console.warn("%cReset sorts new Data...", "font-size: 20px", sorter.direction, sorter.path)
+      _updateSingleSort: function (sorter) {
           if( sorter.direction ) {
               this._sorters.forEach(function (sorter) {
                   sorter._order = null;
@@ -70,8 +69,6 @@
               });
               this._sorters = [sorter];
           }
-          console.info("%cNEW SORT sorts _onSorterChanged", "font-size: 18px; background: #00FF00", sorter.direction, sorter.path,
-              this._sorters[0] && this._sorters[0].path, this._sorters[0] && this._sorters[0].direction, this._sorters)
       },
 
       _onSorterChanged: function(e) {
@@ -90,7 +87,7 @@
           }, this);
         } else {
             if( FeatureFlags.on('LIT-166') ) {
-                this._onSorChanged_UpdateSingleSort(sorter);
+                this._updateSingleSort(sorter);
             } else {
                 this._sorters.forEach(function(sorter) {
                     sorter._order = null;
