@@ -56,30 +56,49 @@
       }
     },
 
-    _onSorterChanged: function(e) {
-      var sorter = e.path && e.path[0] || e.target;
+      /**
+       * Clear the current sort spec only if a new 'sorter.direction' is provided, in the end, you'll always have one sorter.
+       * When the columnInfoList is updated, new headers are created / updated having a null path and direction,
+       * which does not mean user changed the sort spec.
+       **/
+      _updateSingleSort: function (sorter) {
+          if( sorter.direction ) {
+              this._sorters.forEach(function (sorter) {
+                  sorter._order = null;
+                  sorter.direction = null;
+              });
+              this._sorters = [sorter];
+          }
+      },
 
-      this._removeArrayItem(this._sorters, sorter);
-      sorter._order = null;
+      _onSorterChanged: function(e) {
+        var sorter = e.path && e.path[0] || e.target;
 
-      if (this.multiSort) {
-        if (sorter.direction) {
-          this._sorters.unshift(sorter);
+        this._removeArrayItem(this._sorters, sorter);
+        sorter._order = null;
+
+        if (this.multiSort) {
+          if (sorter.direction) {
+            this._sorters.unshift(sorter);
+          }
+
+          this._sorters.forEach(function(sorter, index) {
+            sorter._order = this._sorters.length > 1 ? index : null;
+          }, this);
+        } else {
+            if( FeatureFlags.on('LIT-166') ) {
+                this._updateSingleSort(sorter);
+            } else {
+                this._sorters.forEach(function(sorter) {
+                    sorter._order = null;
+                    sorter.direction = null;
+                });
+
+                if (sorter.direction) {
+                    this._sorters = [sorter];
+                }
+            }
         }
-
-        this._sorters.forEach(function(sorter, index) {
-          sorter._order = this._sorters.length > 1 ? index : null;
-        }, this);
-      } else {
-        this._sorters.forEach(function(sorter) {
-          sorter._order = null;
-          sorter.direction = null;
-        });
-
-        if (sorter.direction) {
-          this._sorters = [sorter];
-        }
-      }
 
       e.stopPropagation();
 
@@ -102,7 +121,23 @@
     },
 
     _removeArrayItem: function(array, item) {
-      var index = array.indexOf(item);
+      /**
+        Sorter or item is updated when you change columnInfoList, e.g.
+         1. you have A,B columns, which have sorter A1 & B1 and the current sorter is B1, then
+         2. column C is added so
+         3. Three new columns are created with a new sorters A2, B2, C1.
+         4. When we send the event to reset last sorter the current sorter in the array is B1 however the new column B
+            has a new sorter B2, that's why I compare sorter with their path name.
+       So, if you don't remove the item using path attribute, its direction will be cleared, which is not the desired behavior.
+       **/
+      var index;
+      if( FeatureFlags.on('LIT-166') ) {
+          index = array.findIndex(function(sItem) {
+              return sItem === item || sItem.path === item.path;
+          });
+      } else {
+          index = array.indexOf(item);
+      }
       if (index > -1) {
         array.splice(index, 1);
       }
