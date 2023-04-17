@@ -3,16 +3,13 @@ dist: trusty
 language: node_js
 node_js: 8
 install:
-- npm install
-- polymer install --variants
+  - npm install
+  - polymer install --variants
 before_script:
 # - gulp lint
 # - polymer lint --rules polymer-2-hybrid --input *.html
 script: skip
-after_success:
-- cat ${TRAVIS_BUILD_DIR}/coverage/lcov.info | coveralls
 notifications:
   slack:
     secure: TbelqQLsoEAgsDPDH6zcrsCKCgo1aUCIrBdJJPMS5cbRdHnuO9aVEyUjSSDwXKWaJF0wKGfD5p0PAFzEOCT4SfWGn0NijtJL7PacCl3DRn89NZTun+s86+uz8qzaPsw1LsyDlmq3ZZw0aNenYxg0xaYsaPUtsyx9/oHDQ8m6g1U2lmqUNAPOaJQpdshcrwhkxOCo7Axe8Gh+yJFGC5MiL5NQO1ncrVeKH4M0MZaSxQQJ4ifh0pc4gLxKCPH9ASHYrd89K+QXimKkGT2b2VCtpL9j4IBQwPdblUTnZDYZl8tNnA8z/baaXqTLvPwbZjhUO1nGhMYTn175zh3i1L1kPwkY5PtENiuM3CNANiy8xUpqyqulL3XQHA52wvPpECLg5DOLGtbDKTVIwF4M+NOL+Sg4WiAPwLU4o5QLjrRrWDcBLYubPBIjVW6bOuaIGezh74FcaAsV33KArw5Ml+aPNeI4dCcl2B+qctgRnHuEI86qPg+0dg+w1DRyZjH4t/IY5off8pgWpV+8T6LPzrAIz+ERuEO4dUvyF3rEV2mqYsnxq6/q/Pt0nSzVmxpVZeS375jaZJXTj1JprKbTuaG5z87CgNTloRG3Dn0ceQ4phwvwet+Hae7NndfIjG/PGBx4b38akMSPE/md/nHliqxFqAQpD22F1Bmi7MzIlBYxNAM=
-after_failure:
-- after_failure
+after_success: test "$TRAVIS_BRANCH" = rp-development && rebuild-emerson-web
